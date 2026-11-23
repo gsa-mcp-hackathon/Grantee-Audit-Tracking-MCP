@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organizations around a grantee</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--ink:#203330;--muted:#687772;--line:#dce3df;--soft:#f5f7f5;--green:#166247;--green-bg:#edf6ee;--amber:#805217;--amber-bg:#fff6e5;--blue:#45648a;--blue-bg:#eef3fb;--edge:#8a9a94;font:12px/1.45 "Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;color:inherit}
+button:disabled{opacity:.55;cursor:wait}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+h1{font-size:18px;line-height:1.25}
+h2{font-size:13px}
+.shell{max-width:980px;padding:14px 16px;margin:auto}
+.subtle{color:var(--muted);font-size:11px}
+.mono{font-family:Consolas,monospace;overflow-wrap:anywhere}
+.notice{font-size:11px;padding:6px 9px;background:var(--amber-bg);color:var(--amber);margin-bottom:8px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0;font-size:10px;color:var(--muted)}
+.legend i{display:inline-block;width:22px;margin-right:5px;vertical-align:middle;border-top:2px solid var(--edge)}
+.legend i.irs{border-top-style:dashed}
+.legend i.unconfirmed{border-top-style:dotted}
+.scroll{overflow-x:auto}
+.graph{position:relative;min-width:560px}
+.band{position:absolute;font-size:10px;font-weight:600;color:var(--muted);white-space:nowrap}
+.edge{position:absolute;border:0 solid var(--edge)}
+.edge.bus{border-color:var(--line)}
+.edge.irs{border-style:dashed}
+.edge.unconfirmed{border-style:dotted}
+.edge.both{border-color:var(--green)}
+.node{position:absolute;display:flex;flex-direction:column;justify-content:center;gap:1px;text-align:left;border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:4px 8px;overflow:hidden}
+.node strong,.node span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.node strong{font-size:11px;font-weight:650}
+.node span{font-size:10px;color:var(--muted)}
+.node.center{background:var(--green-bg);border-color:var(--green);justify-content:flex-start;padding:7px 10px}
+.node.center strong{font-size:13px}
+.node.apart{border-style:dashed;background:var(--bg)}
+.node.more{align-items:center;background:var(--bg);color:var(--blue);font-size:11px}
+.node[aria-pressed=true]{outline:2px solid var(--blue);outline-offset:1px}
+.detail{border-top:1px solid var(--line);margin-top:10px;padding-top:9px}
+.detail p{font-size:11px;margin-top:4px}
+.evidence{border-bottom:1px solid var(--line);padding:6px 0}
+.links{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.source{border:0;background:none;padding:0;color:var(--green);text-decoration:underline;text-underline-offset:2px;font-size:11px;text-align:left}
+.button{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:4px 8px;white-space:nowrap;font-size:11px}
+.footnote{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.45}
+details{font-size:11px;margin-top:8px}
+summary{cursor:pointer;color:var(--muted)}
+mark{background:#ffe1a0;color:#624107}
+.status{font-size:11px;color:var(--amber)}
+.status:not(:empty){margin:6px 0}
+.loading{padding:18px 0;font-size:12px;color:var(--muted)}
+.candidate{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+[hidden]{display:none!important}
+@media(prefers-color-scheme:dark){:root{--bg:#18241f;--ink:#e1eae3;--muted:#a6b6ab;--line:#3b4d40;--soft:#223229;--green:#a0d3b1;--green-bg:#243b2d;--amber:#ebc889;--amber-bg:#3b3324;--blue:#afc6e8;--blue-bg:#28384b;--edge:#7f9187}mark{background:#715a2c;color:#ffedc6}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <div id="welcome" class="loading">Waiting for the network…</div>
+  <div id="candidates" hidden></div>
+  <div id="app" hidden>
+    <div id="demoNotice" class="notice" hidden>Fictional example.</div>
+    <h1 id="name"></h1>
+    <div id="subtitle" class="subtle"></div>
+    <div class="legend"><span><i></i>FAC covered-entity listing</span><span><i class="irs"></i>Form 990 Schedule R</span><span><i class="unconfirmed"></i>Unconfirmed, kept apart</span></div>
+    <div class="scroll"><div id="graph" class="graph" role="group" aria-label="Organizations around this entity"></div></div>
+    <section id="detail" class="detail" aria-live="polite"></section>
+    <details><summary id="notesLabel">Notes and caveats</summary><div id="notes" class="footnote"></div></details>
+  </div>
+</main>
+<script id="network-data">
+// Pure functions over grantee_show_network's result, tested by
+// tests/ui_network.test.cjs. The tiers and evidence are the tool's; this only
+// works out where to draw them.
+window.DatNetwork = (() => {
+  "use strict";
+  const list = value => Array.isArray(value) ? value : [];
+  const obj = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const sourceHosts = new Set(["app.fac.gov", "fac.gov", "www.fac.gov", "sam.gov", "www.sam.gov", "apps.irs.gov"]);
+  function safeUrl(value) {
+    if (typeof value !== "string" || /[\u0000- \\]/.test(value)) return null;
+    try {
+      const u = new URL(value);
+      return u.protocol === "https:" && sourceHosts.has(u.hostname) && !u.username && !u.password && (!u.port || u.port === "443") ? u.href : null;
+    } catch { return null; }
+  }
+  const ABOVE = "lists this entity", BELOW = "controlled or covered by this entity", RELATED = "related, control not stated";
+  const APART = ["possible match", "other organization under its identifiers"];
+  const FAC = "FAC covered-entity listing", SCHEDULE_R = "IRS Form 990 Schedule R";
+  const NW = 168, NH = 44, GAP = 10, STUB = 10, LEFT = 22, TRUNK = 8, CENTER_IDS = 3, SIDE_CAP = 3;
+  function edgeStyle(org) {
+    const sources = new Set(list(obj(org).evidence).map(e => obj(e).source));
+    if (sources.has(FAC) && sources.has(SCHEDULE_R)) return "both";
+    return sources.has(FAC) ? "fac" : sources.has(SCHEDULE_R) ? "irs" : "unconfirmed";
+  }
+  function sourcesLabel(org) { return {both: "FAC + 990", fac: "FAC", irs: "990", unconfirmed: ""}[edgeStyle(org)]; }
+  function spans(years) {
+    const ys = [...new Set(list(years).map(Number).filter(Number.isInteger))].sort((a, b) => a - b), runs = [];
+    for (const y of ys) { if (runs.length && y === runs.at(-1)[1] + 1) runs.at(-1)[1] = y; else runs.push([y, y]); }
+    return runs.map(([a, b]) => a === b ? String(a) : `${a}–${b}`).join(", ");
+  }
+  // Boxes and straight lines for a width: who lists the entity above it, the
+  // entity with its grouped identifiers, then what it controls or covers.
+  // Rows hang off horizontal buses joined by one trunk down the left edge, so
+  // a tier of forty wraps without a line crossing a box.
+  function layout(network, width, expanded) {
+    const net = obj(network), open = obj(expanded), W = Math.max(560, Number(width) || 920);
+    const cols = Math.max(2, Math.floor((W - LEFT + GAP) / (NW + GAP)));
+    const boxes = [], lines = [], labels = [], buses = [];
+    const inTier = tier => list(net.organizations).filter(o => obj(o).tier === tier);
+    let y = 0;
+    function band(tier, title, above) {
+      const all = inTier(tier);
+      if (!all.length) return;
+      const total = obj(obj(net.counts)[tier]).total || all.length, cap = 2 * cols;
+      labels.push({x: LEFT, y, text: `${title} (${total})${total > all.length ? ` · ${all.length} returned` : ""}`});
+      y += 20;
+      const items = (open[tier] || all.length <= cap ? all : all.slice(0, cap - 1)).map(org => ({org}));
+      if (all.length > cap) items.push({more: tier, text: open[tier] ? "Show fewer" : `+${all.length - cap + 1} more`});
+      for (let i = 0; i < items.length; i += cols) {
+        const row = items.slice(i, i + cols), busY = above ? y + NH + STUB : y, nodeY = above ? y : y + STUB;
+        row.forEach((item, c) => {
+          const x = LEFT + c * (NW + GAP);
+          boxes.push({...item, tier, x, y: nodeY, w: NW, h: NH});
+          if (item.org) lines.push({x: x + NW / 2, y: above ? nodeY + NH : busY, w: 0, h: STUB, style: edgeStyle(item.org)});
+        });
+        const orgs = row.filter(item => item.org).length;
+        if (orgs) { lines.push({x: TRUNK, y: busY, w: LEFT + (orgs - 1) * (NW + GAP) + NW / 2 - TRUNK, h: 0, style: "bus"}); buses.push(busY); }
+        y += NH + STUB + GAP;
+      }
+      y += 8;
+    }
+    band(ABOVE, "Lists this entity", true);
+    const ids = list(obj(net.entity).identifiers), CW = 2 * NW + GAP, cy = y;
+    const CH = Math.max(NH, 46 + 15 * Math.min(ids.length, CENTER_IDS) + (ids.length > CENTER_IDS ? 15 : 0));
+    boxes.push({center: true, x: LEFT, y: cy, w: CW, h: CH});
+    const apart = APART.flatMap(inTier), sideOpen = open.apart || apart.length <= SIDE_CAP;
+    const side = (sideOpen ? apart : apart.slice(0, SIDE_CAP - 1)).map(org => ({org}));
+    if (apart.length > SIDE_CAP) side.push({more: "apart", text: sideOpen ? "Show fewer" : `+${apart.length - SIDE_CAP + 1} more`});
+    const spineX = LEFT + CW + 18, mid = i => cy + i * (NH + GAP) + NH / 2;
+    side.forEach((item, i) => {
+      boxes.push({...item, tier: obj(item.org).tier || "apart", x: spineX + 18, y: cy + i * (NH + GAP), w: NW, h: NH});
+      if (item.org) lines.push({x: spineX, y: mid(i), w: 18, h: 0, style: "unconfirmed"});
+    });
+    if (apart.length) {
+      lines.push({x: LEFT + CW, y: mid(0), w: 18, h: 0, style: "unconfirmed"});
+      const last = side.filter(item => item.org).length - 1;
+      if (last > 0) lines.push({x: spineX, y: mid(0), w: 0, h: mid(last) - mid(0), style: "unconfirmed"});
+    }
+    y += Math.max(CH, side.length * (NH + GAP) - GAP) + 18;
+    band(BELOW, "Controlled or covered by this entity", false);
+    band(RELATED, "Related on Schedule R, control not stated", false);
+    if (buses.length) {
+      const at = cy + CH / 2, top = Math.min(at, ...buses), bottom = Math.max(at, ...buses);
+      lines.push({x: TRUNK, y: at, w: LEFT - TRUNK, h: 0, style: "bus"}, {x: TRUNK, y: top, w: 0, h: bottom - top, style: "bus"});
+    }
+    return {width: W, height: y, cols, boxes, lines, labels};
+  }
+  return Object.freeze({list, obj, safeUrl, edgeStyle, sourcesLabel, spans, layout, CENTER_IDS});
+})();
+</script>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id), D = window.DatNetwork;
+  const {list, obj, safeUrl} = D;
+  const text = v => v === undefined || v === null || v === "" ? "—" : String(v);
+  let network = null, demo = false, host = {}, serial = 0, ready = false, buffered = null, selected = "center";
+  const expanded = {}, pending = new Map();
+
+  // Names and other source text only ever enter through textContent.
+  function el(tag, content, cls) { const n = document.createElement(tag); if (content !== undefined) n.textContent = text(content); if (cls) n.className = cls; return n; }
+  function status(v) { $("status").textContent = v; }
+  function notify(method, params) { window.parent.postMessage({jsonrpc: "2.0", method, params}, "*"); }
+  function send(method, params) {
+    return new Promise((resolve, reject) => {
+      const id = ++serial, timer = setTimeout(() => { pending.delete(id); reject(new Error("Host timeout")); }, 120000);
+      pending.set(id, {resolve, reject, timer});
+      window.parent.postMessage({jsonrpc: "2.0", id, method, params}, "*");
+    });
+  }
+  let resizeQueued = false;
+  function resize() {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(() => { resizeQueued = false; notify("ui/notifications/size-changed", {height: Math.ceil(document.querySelector(".shell").getBoundingClientRect().height)}); });
+  }
+  function sourceButton(url, label) {
+    const safe = safeUrl(url);
+    if (!safe) return el("span", "No source link", "subtle");
+    const b = el("button", label, "source");
+    b.type = "button";
+    b.onclick = async () => { try { const r = await send("ui/open-link", {url: safe}); if (r?.isError) throw new Error(); } catch { status("The host could not open this source."); } };
+    return b;
+  }
+  function unpack(result) {
+    if (result?.isError) throw new Error();
+    if (result?.structuredContent) return result.structuredContent;
+    const t = list(result?.content).find(c => c.type === "text");
+    return t ? JSON.parse(t.text) : null;
+  }
+  const realUei = v => typeof v === "string" && /^[A-Z0-9]{12}$/.test(v);
+  const idsOf = org => [...list(org.eins).map(e => `EIN ${e}`), ...list(org.ueis).map(u => `UEI ${u}`)];
+  const place = (n, b) => { n.style.cssText = `left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px`; };
+
+  function showDetail() {
+    const target = $("detail"), entity = obj(network.entity), org = selected === "center" ? null : selected;
+    target.replaceChildren();
+    if (!org) {
+      const base = list(obj(network.searched).ueis)[0];
+      target.append(el("h2", "Identifiers grouped as this entity"));
+      for (const i of list(entity.identifiers)) {
+        const box = el("div", undefined, "evidence"), code = el("p", undefined, "mono"), uei = text(i.uei);
+        code.append(el("span", "UEI "));
+        [...uei].forEach((ch, n) => code.append(el(base && base !== uei && base.length === uei.length && base[n] !== ch ? "mark" : "span", ch)));
+        code.append(el("span", ` · EIN ${text(i.ein)}`));
+        box.append(code, el("p", list(i.names).join(" / ")), el("p", list(i.links).join("; "), "subtle"));
+        target.append(box);
+      }
+      if (!list(entity.identifiers).length) target.append(el("p", "No filing found under the searched identifiers."));
+      const links = el("div", undefined, "links");
+      for (const url of list(entity.source_urls)) if (safeUrl(url)) links.append(sourceButton(url, `${new URL(url).hostname.includes("irs") ? "IRS" : "SAM.gov search"} ↗`));
+      target.append(links);
+    } else {
+      target.append(el("h2", org.name || "Name not given"), el("p", [idsOf(org).join(" · "), org.state, org.primary_activity].filter(Boolean).join(" · "), "subtle"));
+      for (const e of list(org.evidence)) {
+        const box = el("div", undefined, "evidence"), controlled = e.controlled === true ? "reported as controlled" : e.controlled === false ? "reported as not controlled" : null;
+        box.append(el("p", e.says), el("p", [e.source, D.spans(e.years), controlled, e.direct_controlling_entity ? `direct controlling entity: ${e.direct_controlling_entity}` : null].filter(Boolean).join(" · "), "subtle"));
+        if (e.source_url) { const links = el("div", undefined, "links"); links.append(sourceButton(e.source_url, "Source ↗")); box.append(links); }
+        target.append(box);
+      }
+      const args = list(org.eins)[0] ? {ein: org.eins[0]} : realUei(list(org.ueis)[0]) ? {uei: org.ueis[0]} : null;
+      if (host.serverTools && !demo && args) {
+        const links = el("div", undefined, "links"), b = el("button", "Center on this organization", "button");
+        b.type = "button"; b.onclick = () => load(args, b); links.append(b); target.append(links);
+      }
+    }
+    resize();
+  }
+  function drawGraph() {
+    const graph = $("graph"), entity = obj(network.entity), plan = D.layout(network, graph.clientWidth, expanded);
+    graph.replaceChildren();
+    graph.style.cssText = `height:${plan.height}px`;
+    for (const label of plan.labels) { const n = el("div", label.text, "band"); n.style.cssText = `left:${label.x}px;top:${label.y}px`; graph.append(n); }
+    for (const line of plan.lines) {
+      const n = el("div", undefined, `edge ${line.style}`);
+      n.style.cssText = `left:${line.x}px;top:${line.y}px;width:${line.w}px;height:${line.h}px;border-${line.w ? "top" : "left"}-width:${line.style === "bus" ? 1 : 2}px`;
+      graph.append(n);
+    }
+    for (const box of plan.boxes) {
+      const b = el("button", undefined, "node");
+      b.type = "button";
+      place(b, box);
+      if (box.center) {
+        const ids = list(entity.identifiers);
+        b.className = "node center";
+        b.append(el("strong", entity.name || "This entity"), el("span", list(entity.found_in).length ? `Found in ${list(entity.found_in).join(" · ")}` : "Not found in FAC, SAM.gov or IRS records"));
+        for (const i of ids.slice(0, D.CENTER_IDS)) b.append(el("span", `UEI ${text(i.uei)} · EIN ${text(i.ein)}`, "mono"));
+        if (ids.length > D.CENTER_IDS) b.append(el("span", `+${ids.length - D.CENTER_IDS} more identifiers`));
+        b.onclick = () => { selected = "center"; draw(); };
+        b.setAttribute("aria-pressed", String(selected === "center"));
+      } else if (box.more) {
+        b.className = "node more";
+        b.textContent = box.text;
+        b.onclick = () => { expanded[box.more] = !expanded[box.more]; draw(); };
+      } else {
+        const org = box.org, apart = D.edgeStyle(org) === "unconfirmed";
+        if (apart) b.className = "node apart";
+        b.title = org.name || "";
+        b.append(el("strong", org.name || idsOf(org)[0] || "Name not given"), el("span", [org.name ? idsOf(org)[0] : null, apart ? org.tier : D.sourcesLabel(org)].filter(Boolean).join(" · ")));
+        b.onclick = () => { selected = org; draw(); };
+        b.setAttribute("aria-pressed", String(selected === org));
+      }
+      graph.append(b);
+    }
+  }
+  function draw() { drawGraph(); showDetail(); }
+  function show(data) {
+    network = data; demo = data.demo === true; selected = "center";
+    for (const key of Object.keys(expanded)) delete expanded[key];
+    const entity = obj(data.entity), count = list(data.organizations).length;
+    $("app").hidden = false; $("welcome").hidden = true; $("candidates").hidden = true; $("demoNotice").hidden = !demo;
+    $("name").textContent = text(entity.name || "This entity");
+    $("subtitle").textContent = [[entity.city, entity.state].filter(Boolean).join(", "), `${list(entity.identifiers).length} identifiers grouped`, `${count} ${count === 1 ? "organization" : "organizations"} around it`].filter(Boolean).join(" · ");
+    const notes = $("notes"), all = [...list(data.notes), ...list(data.caveats)].filter(v => typeof v === "string");
+    notes.replaceChildren();
+    for (const n of all) notes.append(el("p", n));
+    $("notesLabel").textContent = `Notes and caveats (${all.length})`;
+    status(""); draw();
+  }
+  function showCandidates(data) {
+    const target = $("candidates");
+    target.replaceChildren(el("h1", "More than one organization matches"));
+    for (const c of list(data.candidates)) {
+      const line = el("div", undefined, "candidate"), args = realUei(c.uei) ? {uei: c.uei} : c.ein ? {ein: String(c.ein)} : null;
+      line.append(el("strong", c.name), el("span", `UEI ${text(c.uei)} · EIN ${text(c.ein)}`, "mono"), el("span", [c.city, c.state].filter(Boolean).join(", "), "subtle"));
+      if (host.serverTools && args) { const b = el("button", "Show", "button"); b.type = "button"; b.onclick = () => load(args, b); line.append(b); }
+      target.append(line);
+    }
+    for (const c of list(data.caveats)) target.append(el("p", c, "footnote"));
+    target.hidden = false; $("app").hidden = true; $("welcome").hidden = true;
+    status(""); resize();
+  }
+  function receive(result) {
+    try {
+      const data = unpack(result);
+      if (data?.candidates) showCandidates(data);
+      else if (data?.entity && Array.isArray(data.organizations)) show(data);
+      else throw new Error();
+    } catch { status("The result could not be shown. Anything already on screen is unchanged."); }
+  }
+  async function load(args, button) {
+    button.disabled = true;
+    status("Asking FAC, SAM.gov and the local data…");
+    try { receive(await send("tools/call", {name: "grantee_show_network", arguments: args})); }
+    catch { status("The lookup failed. Anything already on screen is unchanged."); }
+    finally { button.disabled = false; }
+  }
+  document.addEventListener("toggle", resize, true);
+  let lastWidth = 0;
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { const w = $("graph").clientWidth; if (network && w !== lastWidth) { lastWidth = w; drawGraph(); } resize(); }).observe(document.querySelector(".shell"));
+  window.addEventListener("message", event => {
+    if (event.source !== window.parent) return;
+    const m = event.data;
+    if (!m || m.jsonrpc !== "2.0") return;
+    if (m.id !== undefined && pending.has(m.id)) {
+      const p = pending.get(m.id);
+      clearTimeout(p.timer); pending.delete(m.id);
+      m.error ? p.reject(new Error("Host request failed")) : p.resolve(m.result);
+      return;
+    }
+    if (m.method === "ui/notifications/tool-result") { if (ready) receive(m.params); else buffered = m.params; }
+    if (m.method === "ui/notifications/tool-cancelled") status("The host cancelled the request.");
+    if (m.method === "ui/resource-teardown" && m.id !== undefined) window.parent.postMessage({jsonrpc: "2.0", id: m.id, result: {}}, "*");
+  });
+  send("ui/initialize", {appInfo: {name: "DAT grantee network", version: "0.1.0"}, appCapabilities: {availableDisplayModes: ["inline", "fullscreen"]}, protocolVersion: "2026-01-26"})
+    .then(result => { host = obj(result?.hostCapabilities); ready = true; notify("ui/notifications/initialized", {}); if (buffered) receive(buffered); })
+    .catch(() => status("Open this in an MCP Apps client or the local preview."));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.venv/
+.env
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+CLAUDE.md
+eval/runs/
+data/
+uv.lock
+.vscode/
+.codex/
+/research/note-likelihoods
+# Safety eval results stay local for now; don't push them (docs/safety-eval.md).
+docs/safety-results/
+.codex/config.toml

@@ -1,0 +1,39 @@
+[project]
+name = "dat-mcp"
+version = "0.1.0"
+description = "MCP server for investigating HRSA grantees across FAC, SAM.gov, USAspending, and IRS records"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=4.1",  # MCP Apps: ui meta on tools and resources
+    "httpx>=0.27",
+    "inflate64>=1.0",  # Deflate64, used in some IRS e-file zips
+    "pydantic-settings>=2.0.0",
+    "pypdf>=5.0",
+    "truststore>=0.10",
+]
+
+[project.scripts]
+dat-mcp = "dat_mcp.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dat_mcp"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.6.0",
+]
+eval = [
+    "anthropic[bedrock]>=2.3",
+]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

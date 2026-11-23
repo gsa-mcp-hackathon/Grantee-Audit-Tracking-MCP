@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dat-mcp": {
+      "type": "stdio",
+      "command": ".venv/Scripts/python",
+      "args": ["-m", "dat_mcp.app"]
+    }
+  }
+}

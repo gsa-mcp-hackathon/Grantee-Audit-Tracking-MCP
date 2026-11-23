@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grantee identity and audit coverage</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--ink:#203330;--muted:#687772;--line:#dce3df;--soft:#f5f7f5;--green:#166247;--green-bg:#edf6ee;--amber:#805217;--amber-bg:#fff6e5;--red:#a43a36;--red-bg:#fff0ef;--blue:#45648a;--blue-bg:#eef3fb;font:12px/1.45 "Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;color:inherit}
+button:disabled{opacity:.55;cursor:wait}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+h1{font-size:18px;line-height:1.25}
+h2{font-size:13px;margin:12px 0 4px}
+h3{font-size:12px}
+.shell{max-width:980px;padding:14px 16px;margin:auto}
+.heading{display:flex;gap:12px;justify-content:space-between;align-items:start;margin:8px 0 10px}
+.subtle{color:var(--muted);font-size:11px}
+.mono{font-family:Consolas,monospace;overflow-wrap:anywhere}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.button{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:4px 8px;white-space:nowrap;font-size:11px}
+.source{border:0;background:none;padding:0;color:var(--green);text-decoration:underline;text-underline-offset:2px;font-size:11px;text-align:left}
+.notice{font-size:11px;padding:6px 9px;background:var(--amber-bg);color:var(--amber);margin-bottom:8px}
+.years{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:4px}
+.year-tile{display:flex;flex-direction:column;gap:2px;align-items:center;border:1px solid var(--line);border-radius:5px;background:var(--soft);padding:6px 3px;min-width:0}
+.year-tile strong{font-size:12px}
+.year-tile .state{font-size:10px;font-weight:650;white-space:nowrap}
+.year-tile small{font-size:10px;white-space:nowrap}
+.year-tile.ontime{background:var(--green-bg);color:var(--green)}
+.year-tile.late{background:var(--amber-bg);color:var(--amber)}
+.year-tile.gap{background:var(--red-bg);color:var(--red)}
+.year-tile.parent,.year-tile.unlisted{background:var(--blue-bg);color:var(--blue)}
+.year-tile.unlisted{border-style:dashed;border-color:currentColor}
+.year-tile[aria-pressed=true]{outline:2px solid currentColor;outline-offset:-2px}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);margin:9px 0}
+.tab{border:0;border-bottom:2px solid transparent;background:none;padding:5px 0;font-size:11px;color:var(--muted)}
+.tab[aria-selected=true]{color:var(--ink);border-color:var(--green);font-weight:700}
+.row{padding:9px 0;border-bottom:1px solid var(--line)}
+.detail-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:7px}
+.badge{border-radius:4px;background:var(--soft);font-size:10px;padding:3px 6px}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.label{font-size:10px;color:var(--muted);margin-bottom:2px}
+.value{font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.text{font-size:11px;margin:7px 0 0}
+.programs{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0 0}
+.chip{font-size:10px;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:3px 6px}
+.links{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:7px}
+.verification{margin-top:10px}
+.summary{margin-bottom:8px}
+.older{display:block;margin-top:6px;font-size:10px}
+.award-list{display:grid;gap:5px;margin-top:8px;font-size:11px}
+.award-line{display:flex;gap:8px;flex-wrap:wrap}
+.award-line span{color:var(--muted)}
+.footnote{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.45}
+details{font-size:11px;margin-top:8px}
+summary{cursor:pointer;color:var(--muted)}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:11px}
+th{font-size:10px;color:var(--muted);font-weight:600}
+td,th{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child,th:first-child{padding-left:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.card{border-bottom:1px solid var(--line);padding:6px 0}
+.card p{font-size:11px;margin-top:3px}
+mark{background:#ffe1a0;color:#624107}
+.questions{margin:0;padding-left:18px;font-size:11px}
+.questions li{padding:3px 0}
+.status{font-size:11px;color:var(--amber)}
+.status:not(:empty){margin:6px 0}
+.loading{padding:18px 0;font-size:12px;color:var(--muted)}
+.candidate{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+[hidden]{display:none!important}
+@media(max-width:580px){.shell{padding:10px}.heading{display:block}.actions{margin-top:7px}.facts{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}h1{font-size:16px}.tabs{gap:12px}}
+@media(prefers-color-scheme:dark){:root{--bg:#18241f;--ink:#e1eae3;--muted:#a6b6ab;--line:#3b4d40;--soft:#223229;--green:#a0d3b1;--green-bg:#243b2d;--amber:#ebc889;--amber-bg:#3b3324;--red:#f0b0aa;--red-bg:#3e2929;--blue:#afc6e8;--blue-bg:#28384b}mark{background:#715a2c;color:#ffedc6}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <div id="welcome" class="loading">Waiting for grantee evidence…</div>
+  <div id="candidates" hidden></div>
+  <div id="app" hidden>
+    <div id="demoNotice" class="notice" hidden>Fictional example.</div>
+    <header class="heading"><div><h1 id="name"></h1><div id="subtitle" class="subtle"></div></div><div class="actions"><button id="export" class="button">Memo ↓</button><button id="refresh" class="button" hidden>Refresh</button></div></header>
+    <div id="identityNotice" class="notice" hidden></div>
+    <p id="summary" class="subtle summary"></p>
+    <div id="years" class="years" role="group" aria-label="Fiscal years and how each audit was found"></div>
+    <button id="older" class="source older" hidden></button>
+    <nav class="tabs" role="tablist" aria-label="Profile views">
+      <button class="tab" id="tab-evidence" role="tab" aria-controls="evidence" aria-selected="true" data-panel="evidence">Year detail</button>
+      <button class="tab" id="tab-identity" role="tab" aria-controls="identity" aria-selected="false" tabindex="-1" data-panel="identity">Identity</button>
+      <button class="tab" id="tab-questions" role="tab" aria-controls="questions" aria-selected="false" tabindex="-1" data-panel="questions">Questions</button>
+    </nav>
+    <section id="evidence" role="tabpanel" aria-labelledby="tab-evidence"></section>
+    <section id="identity" role="tabpanel" aria-labelledby="tab-identity" hidden></section>
+    <section id="questions" role="tabpanel" aria-labelledby="tab-questions" hidden></section>
+    <div class="verification"><button id="awards" class="source" hidden>Find USAspending awards ↗</button></div>
+    <div id="awardLinks" class="award-list" aria-live="polite"></div>
+    <details><summary id="caveatsLabel">Caveats</summary><div id="caveats" class="footnote"></div></details>
+  </div>
+</main>
+<script id="profile-data">
+// Pure functions over the tool results, tested by tests/ui_profile.test.cjs.
+// They read what grantee_audit_coverage returned; nothing here works out a
+// due date or a lateness of its own.
+window.DatEvidence = (() => {
+  "use strict";
+  const list = value => Array.isArray(value) ? value : [];
+  const obj = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const sourceHosts = new Set(["app.fac.gov", "fac.gov", "www.fac.gov", "sam.gov", "www.sam.gov", "usaspending.gov", "www.usaspending.gov", "apps.irs.gov"]);
+  function safeUrl(value) {
+    if (typeof value !== "string" || /[\u0000- \\]/.test(value)) return null;
+    try {
+      const u = new URL(value);
+      return u.protocol === "https:" && sourceHosts.has(u.hostname) && !u.username && !u.password && (!u.port || u.port === "443") ? u.href : null;
+    } catch { return null; }
+  }
+  function markdown(value) { return String(value ?? "—").replace(/[\\`*_{}\[\]()#+.!|<>]/g, "\\$&"); }
+  function yearOf(row) { const y = Number(obj(row).audit_year); return Number.isInteger(y) && y >= 1900 && y <= 2200 ? y : null; }
+  function years(coverage) { return [...new Set(list(obj(coverage).years).map(yearOf).filter(Boolean))].sort((a, b) => b - a); }
+  function rowsFor(coverage, year) { return list(obj(coverage).years).filter(row => yearOf(row) === year); }
+  const isAudit = row => Object.keys(obj(obj(row).filed_under)).length > 0;
+  function rowKind(row) {
+    const route = String(obj(row).route || "");
+    if (isAudit(row)) return typeof row.days_late !== "number" ? "filed" : row.days_late > 0 ? "late" : "ontime";
+    if (route.startsWith("listed as covered")) return "parent";
+    if (route === "parent's audit on file, entity not listed") return "unlisted";
+    if (route === "parent has no audit on file" || route === "no audit found") return "gap";
+    return "unknown";
+  }
+  const LABELS = {
+    ontime: ["✓", "By due date"], late: ["+", "After due date"], filed: ["·", "Filed"],
+    parent: ["↗", "Parent listing"], unlisted: ["?", "Parent filed"], gap: ["!", "None found"],
+    review: ["?", "Several filers"], unknown: ["?", "See rows"],
+  };
+  function yearStatus(coverage, year) {
+    const rows = rowsFor(coverage, year), audits = rows.filter(isAudit);
+    let primary = rows[0], kind = rowKind(primary);
+    if (audits.length) {
+      // A later resubmission must not make an earlier acceptance look late.
+      primary = [...audits].sort((a, b) => String(a.fac_accepted_date || "9").localeCompare(String(b.fac_accepted_date || "9")))[0];
+      const filers = new Set(audits.map(a => `${a.filed_under.uei}/${a.filed_under.ein}`));
+      kind = filers.size > 1 ? "review" : rowKind(primary);
+    }
+    const [symbol, label] = LABELS[kind];
+    const linked = audits.length > 0 && primary.route !== "own audit";
+    return {year, rows, audits, primary, kind, symbol, label, linked};
+  }
+  function statement(s) {
+    if (s.kind === "late") return `audit accepted ${s.primary.days_late.toLocaleString("en-US")} days after the nine-month date`;
+    if (s.kind === "ontime") return "audit accepted by the nine-month date";
+    if (s.kind === "review") return "audits by more than one filer";
+    return String(obj(s.primary).route || "no rows");
+  }
+  function overview(coverage) {
+    const states = years(coverage).map(y => yearStatus(coverage, y)), count = kind => states.filter(s => s.kind === kind).length;
+    const latest = states[0], withAudit = states.filter(s => s.audits.length).length;
+    const parts = [`${withAudit} of ${states.length} fiscal years have an audit`];
+    if (count("late")) parts.push(`${count("late")} accepted after the nine-month date`);
+    if (count("gap")) parts.push(`${count("gap")} with no audit found`);
+    if (count("parent") + count("unlisted")) parts.push(`${count("parent") + count("unlisted")} found through a parent`);
+    return {states, summary: latest ? parts.join(" · ") : "No fiscal-year rows were returned"};
+  }
+  function awardLinks(result, uei) {
+    // Never show a similarly named recipient's awards as this grantee's.
+    return list(obj(result).awards).filter(a => obj(a)["Recipient UEI"] === uei && safeUrl(a.source_url));
+  }
+  function merged(...lists) { return [...new Set(lists.flatMap(list).filter(v => typeof v === "string"))]; }
+  return Object.freeze({list, obj, safeUrl, markdown, yearOf, years, rowsFor, isAudit, rowKind, yearStatus, statement, overview, awardLinks, merged});
+})();
+</script>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id), D = window.DatEvidence;
+  const {list, obj, safeUrl, markdown} = D;
+  const text = v => v === undefined || v === null || v === "" ? "—" : String(v);
+  const money = v => v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? "Not given" : new Intl.NumberFormat("en-US", {style: "currency", currency: "USD", maximumFractionDigits: 0}).format(Number(v));
+  const TILES = 8;
+  let coverage = null, identity = null, demo = false, host = {}, serial = 0, ready = false, buffered = null, activeYear = null, expanded = false, generation = 0;
+  const pending = new Map();
+
+  // Source text (names, notes, FAC free text) only ever enters through textContent.
+  function el(tag, content, cls) { const n = document.createElement(tag); if (content !== undefined) n.textContent = text(content); if (cls) n.className = cls; return n; }
+  function set(id, v) { $(id).textContent = text(v); }
+  function status(v) { $("status").textContent = v; }
+  function notify(method, params) { window.parent.postMessage({jsonrpc: "2.0", method, params}, "*"); }
+  function send(method, params) {
+    return new Promise((resolve, reject) => {
+      const id = ++serial, timer = setTimeout(() => { pending.delete(id); reject(new Error("Host timeout")); }, 120000);
+      pending.set(id, {resolve, reject, timer});
+      window.parent.postMessage({jsonrpc: "2.0", id, method, params}, "*");
+    });
+  }
+  let resizeQueued = false;
+  function resize() {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(() => { resizeQueued = false; notify("ui/notifications/size-changed", {height: Math.ceil(document.querySelector(".shell").getBoundingClientRect().height)}); });
+  }
+  function sourceButton(url, label) {
+    const safe = safeUrl(url);
+    if (!safe) return el("span", "No source link", "subtle");
+    const b = el("button", label, "source");
+    b.type = "button";
+    b.onclick = async () => { try { const r = await send("ui/open-link", {url: safe}); if (r?.isError) throw new Error(); } catch { status("The host could not open this source."); } };
+    return b;
+  }
+  function fact(parent, label, value) { const n = el("div"); n.append(el("div", label, "label"), el("div", value, "value")); parent.append(n); }
+  function unpack(result) {
+    if (result?.isError) throw new Error();
+    if (result?.structuredContent) return result.structuredContent;
+    const t = list(result?.content).find(c => c.type === "text");
+    return t ? JSON.parse(t.text) : null;
+  }
+  const searched = () => obj(coverage.searched);
+  const registrations = () => list(obj(identity.sam_registrations).registrations);
+  const identifiers = () => list(identity.identifiers).length ? list(identity.identifiers) : list(obj(coverage.identity).identifiers);
+  const realUei = v => typeof v === "string" && /^[A-Z0-9]{12}$/.test(v);
+  function primaryUei() { return [...list(searched().ueis), ...registrations().map(r => r.uei), ...identifiers().map(i => i.uei)].find(realUei); }
+  function selectTab(button) {
+    document.querySelectorAll(".tab").forEach(b => { const on = b === button; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; $(b.dataset.panel).hidden = !on; });
+    resize();
+  }
+
+  function drawRow(target, row) {
+    const box = el("div", undefined, "row"), head = el("div", undefined, "detail-head"), facts = el("div", undefined, "facts");
+    const para = (value, cls) => box.append(el("p", value, cls || "text"));
+    head.append(el("h3", row.route));
+    if (row.report_id) head.append(el("span", row.report_id, "badge mono"));
+    box.append(head, facts);
+    let label = "Parent's audit ↗";
+    if (D.isAudit(row)) {
+      label = "FAC audit ↗";
+      fact(facts, "Fiscal year end", row.fy_end_date);
+      fact(facts, "Due date", row.due_date);
+      fact(facts, "FAC accepted", row.fac_accepted_date);
+      fact(facts, "Days after due date", typeof row.days_late === "number" ? row.days_late.toLocaleString("en-US") : "Not given");
+      fact(facts, "Federal expenditures", money(row.total_amount_expended));
+      fact(facts, "Filed under", `UEI ${text(row.filed_under.uei)} · EIN ${text(row.filed_under.ein)}`);
+      if (row.period_months) fact(facts, "Audit period", `${row.period_months} months from ${text(row.fy_start_date)}`);
+      if (row.resubmission_version > 1) fact(facts, "Version", `Resubmission ${row.resubmission_version}`);
+      if (row.filed_as) para(`Filed as: ${row.filed_as}`);
+      if (list(row.linked_by).length) para(`Linked by: ${list(row.linked_by).join("; ")}`);
+    } else if (row.listed_by) {
+      const parent = obj(row.listed_by), listed = obj(row.listed_identifiers);
+      fact(facts, "Listed by", parent.name);
+      fact(facts, "Parent UEI / EIN", `${text(parent.uei)} / ${text(parent.ein)}`);
+      fact(facts, "Parent's fiscal year end", parent.fy_end_date);
+      fact(facts, "Identifiers listed", [...list(listed.ueis), ...list(listed.eins)].join(", "));
+    } else {
+      if (row.route === "no audit found") label = "Search FAC ↗";
+      fact(facts, "Expected fiscal year end", row.expected_fy_end_date);
+      fact(facts, "Expected due date", row.expected_due_date);
+      if (row.prior_year_audit_year) fact(facts, `FY${row.prior_year_audit_year} federal expenditures`, money(row.prior_year_total_expended));
+      const audit = obj(row.parent_audit), parent = obj(row.parent);
+      if (row.parent_audit) {
+        fact(facts, "Parent's audit", audit.auditee_name);
+        fact(facts, "Accepted", audit.fac_accepted_date);
+        fact(facts, "Last listed this entity", `FY${text(audit.last_listed_this_entity)}`);
+      }
+      if (row.parent) {
+        fact(facts, "Parent", parent.name);
+        fact(facts, "Last listed this entity", `FY${text(parent.last_listed_this_entity)}`);
+        if (parent.checked) fact(facts, "Checked", parent.checked);
+      }
+      const programs = el("div", undefined, "programs");
+      for (const p of list(row.prior_year_programs)) programs.append(el("span", `${text(obj(p).aln)} · ${money(obj(p).amount_expended)} · ${text(obj(p).program)}`, "chip"));
+      if (programs.children.length) { para(`FY${text(row.prior_year_audit_year)} programs:`, "footnote"); box.append(programs); }
+      if (row.what_this_means) para(row.what_this_means);
+      if (row.note) para(row.note);
+    }
+    const links = el("div", undefined, "links");
+    links.append(sourceButton(row.source_url, label));
+    box.append(links);
+    target.append(box);
+  }
+  function showYear(year) {
+    activeYear = year;
+    document.querySelectorAll(".year-tile").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.year) === year)));
+    const target = $("evidence"), rows = D.rowsFor(coverage, year);
+    target.replaceChildren(el("h2", `FY${year}`));
+    for (const row of rows) drawRow(target, row);
+    resize();
+  }
+  function drawYears() {
+    const ys = D.years(coverage), visible = expanded ? ys : ys.slice(0, TILES), target = $("years");
+    target.replaceChildren();
+    for (const year of visible) {
+      const s = D.yearStatus(coverage, year), b = el("button", undefined, `year-tile ${s.kind}`);
+      b.dataset.year = year;
+      b.type = "button";
+      const small = [s.kind === "late" ? `+${s.primary.days_late.toLocaleString("en-US")}d` : "", s.linked ? "linked" : ""].filter(Boolean).join(" · ") || " ";
+      b.append(el("strong", year), el("span", `${s.symbol} ${s.label}`, "state"), el("small", small));
+      b.title = `FY${year}: ${s.rows.map(r => r.route).join("; ")}`;
+      b.setAttribute("aria-label", `Fiscal year ${year}: ${D.statement(s)}`);
+      b.onclick = () => { showYear(year); selectTab($("tab-evidence")); };
+      target.append(b);
+    }
+    $("older").hidden = ys.length <= TILES;
+    set("older", expanded ? "Show recent years" : `+${ys.length - TILES} earlier years`);
+    if (ys.length) showYear(visible.includes(activeYear) ? activeYear : visible[0]);
+    else $("evidence").replaceChildren(el("p", "No fiscal-year rows were returned.", "text"));
+  }
+  function section(target, title) { target.append(el("h2", title)); const grid = el("div", undefined, "grid"); target.append(grid); return grid; }
+  function card(grid, title, lines, url, label) {
+    const c = el("div", undefined, "card");
+    c.append(el("h3", title));
+    for (const line of lines.filter(Boolean)) c.append(el("p", line));
+    if (url) { const links = el("div", undefined, "links"); links.append(sourceButton(url, label)); c.append(links); }
+    grid.append(c);
+    return c;
+  }
+  function drawIdentity() {
+    const target = $("identity"), base = list(searched().ueis)[0];
+    target.replaceChildren();
+    let grid = section(target, "Identifiers");
+    for (const i of identifiers()) {
+      const c = card(grid, list(i.names).join(" / ") || "No name on file", []), code = el("p", undefined, "mono"), uei = text(i.uei);
+      code.append(el("span", "UEI "));
+      [...uei].forEach((ch, n) => code.append(el(base && base !== uei && base.length === uei.length && base[n] !== ch ? "mark" : "span", ch)));
+      code.append(el("span", ` · EIN ${text(i.ein)}`));
+      c.append(code);
+      if (list(i.audit_years).length) c.append(el("p", [...new Set(list(i.audit_years))].join(", ")));
+      c.append(el("p", list(i.links).join("; "), "subtle"));
+    }
+    if (!identifiers().length) target.append(el("p", "No filing found under the searched identifiers.", "text"));
+
+    const end = obj(obj(identity.entity).fiscal_year_end);
+    if (Object.keys(end).length) {
+      target.append(el("h2", "Fiscal year end"));
+      const wrap = el("div", undefined, "table-scroll"), table = el("table"), body = el("tbody");
+      const line = (source, value) => { if (!value) return; const tr = el("tr"); tr.append(el("td", source), el("td", value)); body.append(tr); };
+      line("FAC", obj(end.fac).value);
+      line("SAM.gov", obj(end.sam).value);
+      line("FAC parent", obj(end.fac_parent).value);
+      line("IRS", list(end.irs).map(r => `month ${text(obj(r).month)}`).join(", "));
+      line("Used", obj(end.used).value);
+      table.append(body); wrap.append(table); target.append(wrap);
+      if (end.sources_disagree) target.append(el("p", "These sources disagree.", "notice"));
+    }
+
+    grid = section(target, "SAM.gov");
+    for (const r of registrations()) card(grid, text(r.legal_business_name), [
+      `UEI ${text(r.uei)} · ${text(r.registration_status)} · expires ${text(r.registration_expiration_date)}`,
+      [r.entity_structure, r.profit_structure].filter(Boolean).join(" · "),
+      [r.address, r.city, r.state].filter(Boolean).join(", "),
+    ], r.source_url, "SAM.gov search ↗");
+    const notInSam = list(obj(identity.sam_registrations).not_found);
+    if (notInSam.length) target.append(el("p", `Not in SAM.gov: ${notInSam.join(", ")}`, "text"));
+
+    const irs = obj(identity.irs_records);
+    grid = section(target, "IRS");
+    for (const r of list(irs.records)) card(grid, text(r.name), [
+      `EIN ${text(r.ein)} · ${[r.city, r.state].filter(Boolean).join(", ")}`,
+      `${text(r.exemption)} · ${text(r.exemption_status)}`,
+      r.name_matches_fac === false ? "A FAC filing name does not match this name." : null,
+    ], r.source_url, "IRS ↗");
+    for (const r of list(irs.revocations)) card(grid, text(r.name), [`EIN ${text(r.ein)} · exemption revoked ${text(r.revocation_date)}${r.reinstatement_date ? ` · reinstated ${r.reinstatement_date}` : ""}`], r.source_url, "IRS ↗");
+    for (const r of list(irs.listed_by)) card(grid, `Schedule R: ${text(r.filer_name)}`, [`EIN ${text(r.filer_ein)} · ${text(r.relationship)} · ${list(r.tax_years).join(", ")}`], r.source_url, "IRS ↗");
+    if (list(irs.not_found).length) target.append(el("p", `Not in IRS records: ${list(irs.not_found).join(", ")}`, "text"));
+
+    if (list(identity.listed_in_parent_audits).length) {
+      grid = section(target, "Parent audits listing this entity");
+      for (const p of list(identity.listed_in_parent_audits)) card(grid, text(p.listed_by_name), [
+        `EIN ${text(p.listed_by_ein)} · UEI ${list(p.listed_by_ueis).join(", ") || "—"}`,
+        `By ${text(p.listed_by)}: ${list(p.audit_years).join(", ")}`,
+      ], p.source_url, "FAC ↗");
+    }
+    if (list(identity.unconfirmed_leads).length) {
+      grid = section(target, "Possible matches (unconfirmed)");
+      for (const l of list(identity.unconfirmed_leads)) card(grid, list(l.names).join(" / ") || "No name on file", [`UEI ${text(l.uei)} · EIN ${text(l.ein)}`, list(l.links).join("; ")]);
+    }
+    if (list(identity.other_organizations).length) {
+      grid = section(target, "Other organizations under these identifiers");
+      for (const o of list(identity.other_organizations)) card(grid, list(o.names).join(" / ") || "No name on file", [`UEI ${list(o.ueis).join(", ") || "—"} · EIN ${list(o.eins).join(", ") || "—"}`, o.why]);
+    }
+  }
+  function drawQuestions() {
+    const target = $("questions"), questions = D.merged(coverage.open_questions, identity.open_questions), q = el("ol", undefined, "questions");
+    target.replaceChildren();
+    for (const item of questions) q.append(el("li", item));
+    target.append(questions.length ? q : el("p", "No open questions.", "subtle"));
+    target.append(el("h2", "Notes"));
+    for (const n of D.merged(coverage.notes, identity.notes)) target.append(el("p", n, "text"));
+    set("tab-questions", `Questions (${questions.length})`);
+  }
+  function draw(data) {
+    coverage = obj(data.coverage); identity = obj(data.identity); demo = data.demo === true; ++generation;
+    $("app").hidden = false; $("welcome").hidden = true; $("candidates").hidden = true; $("demoNotice").hidden = !demo;
+    $("awardLinks").replaceChildren(); $("awards").disabled = false; set("awards", "Find USAspending awards ↗");
+    const reg = registrations().find(r => list(searched().ueis).includes(r.uei)) || registrations()[0] || list(obj(coverage.identity).sam_registrations)[0];
+    const eins = [...new Set(identifiers().map(i => i.ein).filter(Boolean))];
+    set("name", reg?.legal_business_name || identifiers().flatMap(i => list(i.names))[0] || "Grantee");
+    set("subtitle", [`UEI ${primaryUei() || "none on file"}`, `EIN ${eins.join(", ") || "none on file"}`, [reg?.city, reg?.state].filter(Boolean).join(", "), reg?.registration_status ? `SAM.gov ${reg.registration_status}` : null].filter(Boolean).join(" · "));
+    const brief = obj(coverage.identity), left = [];
+    if (eins.length > 1) left.push(`${eins.length} EINs are linked`);
+    if (brief.unconfirmed_leads) left.push(`${brief.unconfirmed_leads} possible matches are left out`);
+    if (brief.other_organizations) left.push(`${brief.other_organizations} other organizations filed under these identifiers`);
+    $("identityNotice").hidden = !left.length;
+    set("identityNotice", left.join(" · "));
+    const o = D.overview(coverage);
+    set("summary", o.summary);
+    drawYears(); drawIdentity(); drawQuestions();
+    const canCall = Boolean(host.serverTools) && !demo;
+    $("refresh").hidden = !canCall || !(list(searched().ueis).length || list(searched().eins).length);
+    $("awards").hidden = !canCall || !primaryUei();
+    const caveats = $("caveats");
+    caveats.replaceChildren();
+    const all = D.merged(coverage.caveats, identity.caveats);
+    for (const c of all) caveats.append(el("p", c));
+    set("caveatsLabel", `Caveats (${all.length})`);
+    status(""); resize();
+  }
+  function drawCandidates(data) {
+    const target = $("candidates");
+    ++generation;
+    target.replaceChildren(el("h1", "More than one organization matches"), el("p", `Searched: ${text(obj(data.searched).name)}${obj(data.searched).state ? `, ${data.searched.state}` : ""}`, "subtle"));
+    for (const c of list(data.candidates)) {
+      const line = el("div", undefined, "candidate"), args = realUei(c.uei) ? {uei: c.uei} : c.ein ? {ein: String(c.ein)} : null;
+      line.append(el("strong", c.name), el("span", `UEI ${text(c.uei)} · EIN ${text(c.ein)}`, "mono"), el("span", `${[c.city, c.state].filter(Boolean).join(", ")} · latest audit year ${text(c.latest_audit_year)}`, "subtle"));
+      if (host.serverTools && args) { const b = el("button", "Show", "button"); b.type = "button"; b.onclick = () => load(args, b); line.append(b); }
+      target.append(line);
+    }
+    for (const c of list(data.caveats)) target.append(el("p", c, "footnote"));
+    target.hidden = false; $("app").hidden = true; $("welcome").hidden = true;
+    status(""); resize();
+  }
+  function receive(result) {
+    try {
+      const data = unpack(result);
+      if (data?.candidates) drawCandidates(data);
+      else if (data?.coverage && data?.identity) draw(data);
+      else throw new Error();
+    } catch { status("The result could not be shown. Anything already on screen is unchanged."); }
+  }
+  async function load(args, button) {
+    button.disabled = true;
+    status("Asking FAC, SAM.gov and the local data…");
+    try { receive(await send("tools/call", {name: "grantee_show_profile", arguments: args})); }
+    catch { status("The lookup failed. Anything already on screen is unchanged."); }
+    finally { button.disabled = false; }
+  }
+
+  $("older").onclick = () => { expanded = !expanded; drawYears(); resize(); };
+  const tabs = [...document.querySelectorAll(".tab")];
+  tabs.forEach((b, i) => {
+    b.onclick = () => selectTab(b);
+    b.onkeydown = e => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      e.preventDefault();
+      const n = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      selectTab(tabs[n]); tabs[n].focus();
+    };
+  });
+  $("refresh").onclick = () => load(list(searched().ueis).length ? {uei: list(searched().ueis)} : {ein: list(searched().eins)}, $("refresh"));
+  $("awards").onclick = async () => {
+    const b = $("awards"), uei = primaryUei(), request = generation;
+    b.disabled = true; set("awards", "Finding award links…");
+    try {
+      const result = unpack(await send("tools/call", {name: "usaspending_search_awards", arguments: {uei, limit: 5}}));
+      if (request !== generation) return;
+      const matches = D.awardLinks(result, uei), target = $("awardLinks");
+      target.replaceChildren();
+      for (const a of matches) {
+        const row = el("div", undefined, "award-line");
+        row.append(sourceButton(a.source_url, `${text(a["Award ID"])} ↗`), el("span", `${a["Awarding Sub Agency"] || a["Awarding Agency"] || ""} · ALN ${text(a["CFDA Number"])}`));
+        target.append(row);
+      }
+      if (!matches.length || result.more_available) target.append(el("p", matches.length ? "More awards are available." : `No awards returned under UEI ${uei}.`, "footnote"));
+      set("awards", "Refresh award links ↗");
+    } catch { if (request === generation) { status("Award links could not be loaded."); set("awards", "Retry award links ↗"); } }
+    finally { if (request === generation) { b.disabled = false; resize(); } }
+  };
+  $("export").onclick = () => {
+    if (!coverage) return;
+    const o = D.overview(coverage), lines = [`# ${markdown($("name").textContent)}`, markdown($("subtitle").textContent), demo ? "Fictional example; not real data." : "Evidence assembled for an analyst's review; not a determination.", "", "## Fiscal years"];
+    for (const s of o.states) for (const r of s.rows) {
+      const dates = D.isAudit(r) ? `; accepted ${markdown(r.fac_accepted_date)}, due ${markdown(r.due_date)}, ${markdown(r.days_late)} days after; filed under UEI ${markdown(r.filed_under.uei)}, EIN ${markdown(r.filed_under.ein)}` : "";
+      lines.push(`- FY${s.year}: ${markdown(r.route)}${r.report_id ? ` (${markdown(r.report_id)})` : ""}${dates}. ${safeUrl(r.source_url) || ""}`);
+    }
+    lines.push("", "## Identifiers", ...identifiers().map(i => `- UEI ${markdown(i.uei)}, EIN ${markdown(i.ein)}: ${markdown(list(i.links).join("; "))}`));
+    lines.push("", "## Open questions", ...D.merged(coverage.open_questions, identity.open_questions).map(c => `- ${markdown(c)}`));
+    lines.push("", "## Notes", ...D.merged(coverage.notes, identity.notes).map(c => `- ${markdown(c)}`));
+    lines.push("", "## Caveats", ...D.merged(coverage.caveats, identity.caveats).map(c => `- ${markdown(c)}`));
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown;charset=utf-8"})), a = el("a");
+    a.href = url; a.download = "grantee-profile.md"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status("Memo downloaded.");
+  };
+  document.addEventListener("toggle", resize, true);
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(resize).observe(document.querySelector(".shell"));
+  window.addEventListener("message", event => {
+    if (event.source !== window.parent) return;
+    const m = event.data;
+    if (!m || m.jsonrpc !== "2.0") return;
+    if (m.id !== undefined && pending.has(m.id)) {
+      const p = pending.get(m.id);
+      clearTimeout(p.timer); pending.delete(m.id);
+      m.error ? p.reject(new Error("Host request failed")) : p.resolve(m.result);
+      return;
+    }
+    if (m.method === "ui/notifications/tool-result") { if (ready) receive(m.params); else buffered = m.params; }
+    if (m.method === "ui/notifications/tool-cancelled") status("The host cancelled the request.");
+    if (m.method === "ui/resource-teardown" && m.id !== undefined) window.parent.postMessage({jsonrpc: "2.0", id: m.id, result: {}}, "*");
+  });
+  send("ui/initialize", {appInfo: {name: "DAT grantee profile", version: "0.3.0"}, appCapabilities: {availableDisplayModes: ["inline", "fullscreen"]}, protocolVersion: "2026-01-26"})
+    .then(result => { host = obj(result?.hostCapabilities); ready = true; notify("ui/notifications/initialized", {}); if (buffered) receive(buffered); })
+    .catch(() => status("Open this in an MCP Apps client or the local preview."));
+})();
+</script>
+</body>
+</html>

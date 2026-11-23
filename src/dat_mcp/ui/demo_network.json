@@ -1,0 +1,145 @@
+{
+  "demo": true,
+  "searched": {"ueis": ["DEMOHEALTH01"], "eins": []},
+  "entity": {
+    "name": "Riverbend Community Health",
+    "identifiers": [
+      {
+        "uei": "DEMOHEALTH01",
+        "ein": "000000001",
+        "names": ["RIVERBEND COMMUNITY HEALTH"],
+        "links": ["searched UEI DEMOHEALTH01"]
+      },
+      {
+        "uei": "DEMOHEALTH0I",
+        "ein": "000000001",
+        "names": ["RIVERBEND COMMUNITY HEALTH INC"],
+        "links": ["UEI one character from DEMOHEALTH01, with the same EIN"]
+      }
+    ],
+    "found_in": ["FAC", "SAM.gov", "IRS"],
+    "city": "RIVERBEND",
+    "state": "MN",
+    "source_urls": []
+  },
+  "organizations": [
+    {
+      "name": "RIVERBEND PHARMACY LLC",
+      "ueis": [],
+      "eins": ["000000004"],
+      "tier": "controlled or covered by this entity",
+      "state": "MN",
+      "primary_activity": "PHARMACY",
+      "evidence": [
+        {
+          "source": "IRS Form 990 Schedule R",
+          "says": "this entity's Schedule R reports it as a disregarded entity",
+          "years": [2023, 2024],
+          "direct_controlling_entity": "RIVERBEND COMMUNITY HEALTH",
+          "source_url": null
+        },
+        {
+          "source": "FAC covered-entity listing",
+          "says": "this entity's latest audit lists it as covered",
+          "years": ["2024"],
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "name": "RIVERBEND HOUSING SERVICES",
+      "ueis": [],
+      "eins": ["000000005"],
+      "tier": "controlled or covered by this entity",
+      "state": "MN",
+      "primary_activity": "SUPPORTIVE HOUSING",
+      "evidence": [
+        {
+          "source": "IRS Form 990 Schedule R",
+          "says": "this entity's Schedule R reports it as a related tax-exempt organization",
+          "years": [2024],
+          "controlled": true,
+          "direct_controlling_entity": "RCH",
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "name": null,
+      "ueis": ["DEMOCHILD001"],
+      "eins": [],
+      "tier": "controlled or covered by this entity",
+      "evidence": [
+        {
+          "source": "FAC covered-entity listing",
+          "says": "this entity's latest audit lists it as covered",
+          "years": ["2024"],
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "name": "RIVERBEND HEALTH NETWORK",
+      "ueis": ["DEMOPARENT01"],
+      "eins": ["000000009"],
+      "tier": "lists this entity",
+      "evidence": [
+        {
+          "source": "FAC covered-entity listing",
+          "says": "its audit lists this entity as covered, by UEI",
+          "years": ["2022"],
+          "source_url": null
+        },
+        {
+          "source": "IRS Form 990 Schedule R",
+          "says": "its Schedule R reports this entity as a related tax-exempt organization",
+          "years": [2022, 2023],
+          "controlled": true,
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "name": "RIVERBEND HEALTH FOUNDATION",
+      "ueis": [],
+      "eins": ["000000006"],
+      "tier": "related, control not stated",
+      "state": "MN",
+      "primary_activity": "FUNDRAISING",
+      "evidence": [
+        {
+          "source": "IRS Form 990 Schedule R",
+          "says": "this entity's Schedule R reports it as a related tax-exempt organization",
+          "years": [2024],
+          "controlled": false,
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "name": "RIVERBEND DENTAL CLINIC",
+      "ueis": ["DEMOCLINIC02"],
+      "eins": ["000000002"],
+      "tier": "possible match",
+      "evidence": [
+        {
+          "source": "grantee_identity_resolution",
+          "says": "a different name at the same address"
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "controlled or covered by this entity": {"total": 3, "shown": 3},
+    "lists this entity": {"total": 1, "shown": 1},
+    "related, control not stated": {"total": 1, "shown": 1},
+    "possible match": {"total": 1, "shown": 1}
+  },
+  "notes": [
+    "1 entities its latest audit lists by UEI are shown by UEI alone: FAC gives no name."
+  ],
+  "caveats": [
+    "This is a fictional network. Every name, identifier and year is made up.",
+    "A tier says who lists whom; it decides nothing about whether one organization's audit covers another."
+  ]
+}

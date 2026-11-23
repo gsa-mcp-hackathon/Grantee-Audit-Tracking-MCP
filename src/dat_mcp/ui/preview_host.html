@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DAT · grantee view preview</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f3ee;color:#253733;font:13px "Segoe UI",sans-serif}
+.bar{background:#203f32;color:#eff6ef;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bar strong{font-size:12px;letter-spacing:.07em}
+.bar span{color:#c5d8cb;font-size:11px}
+.search{display:flex;gap:8px;margin-left:auto}
+.search select{font:inherit;padding:7px;border-radius:6px;border:1px solid #799988;background:#f7faf6;color:#203f32}
+.search input{font:inherit;width:195px;padding:8px 10px;border-radius:6px;border:1px solid #799988;background:#f7faf6;color:#203f32}
+.search button{font:inherit;font-size:12px;background:#ecf2e9;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;color:#203f32}
+.search button:disabled{opacity:.5;cursor:wait}
+#message{color:#7b531e;font-size:12px;padding:0 24px}
+#message:not(:empty){padding:12px 24px;background:#faf0d8}
+#source{padding:12px 24px;background:#e7f0e8}
+#source:empty{display:none}
+iframe{width:100%;border:0;min-height:180px;display:block;background:#fff}
+a{color:#155f47}
+@media(max-width:650px){.bar{padding:12px}.search{width:100%;margin:0}.search input{flex:1;width:0}}
+</style>
+</head>
+<body>
+<header class="bar"><strong>GRANTEE VIEW PREVIEW</strong><span>Local host for the same views MCP Apps clients show</span><form class="search" id="search"><select id="kind" aria-label="View"><option value="profile">Profile</option><option value="network">Network</option></select><input id="uei" aria-label="Grantee UEI" placeholder="12-character UEI" maxlength="12" pattern="[A-Za-z0-9]{12}" required><button id="lookup" type="submit">Show grantee</button><button id="demo" type="button">Demo</button></form></header>
+<div id="message" role="status" aria-live="polite"></div>
+<div id="source"></div>
+<iframe id="view" title="Grantee view" sandbox="allow-scripts allow-downloads"></iframe>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id), view = $("view"), message = $("message"), source = $("source");
+  const base = location.pathname, HOSTS = ["app.fac.gov", "fac.gov", "www.fac.gov", "sam.gov", "www.sam.gov", "usaspending.gov", "www.usaspending.gov", "apps.irs.gov"];
+  const kind = () => $("kind").value;
+  let initialized = false, latest = null, generation = 0;
+  function post(payload) { view.contentWindow.postMessage({jsonrpc: "2.0", ...payload}, "*"); }
+  async function api(path, body) {
+    const response = await fetch(base + path, body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "The request failed.");
+    return result;
+  }
+  function deliver(result) { latest = result; if (initialized) post({method: "ui/notifications/tool-result", params: result}); }
+  function safeLink(value) {
+    if (typeof value !== "string" || /[\u0000- \\]/.test(value)) return null;
+    try { const u = new URL(value); return u.protocol === "https:" && HOSTS.includes(u.hostname) && !u.username && !u.password && (!u.port || u.port === "443") ? u.href : null; } catch { return null; }
+  }
+  async function bridge(m) {
+    switch (m.method) {
+      case "ui/initialize": return {protocolVersion: "2026-01-26", hostInfo: {name: "DAT local preview", version: "0.2.0"}, hostCapabilities: {openLinks: {}, serverTools: {}}, hostContext: {displayMode: "inline", platform: "desktop", locale: "en-US"}};
+      case "tools/call": return await api("call", m.params);
+      case "ui/open-link": {
+        const url = safeLink(m.params?.url);
+        if (!url) throw new Error("Source link is not allowed.");
+        const a = document.createElement("a");
+        a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = `Open ${url} in a new tab ↗`;
+        source.replaceChildren(a); source.scrollIntoView({behavior: "smooth", block: "nearest"});
+        return {};
+      }
+      case "ping": return {};
+      default: throw new Error("Unsupported method.");
+    }
+  }
+  window.addEventListener("message", async e => {
+    if (e.source !== view.contentWindow) return;
+    const m = e.data;
+    if (!m || m.jsonrpc !== "2.0") return;
+    if (m.method === "ui/notifications/initialized") { initialized = true; if (latest) deliver(latest); return; }
+    if (m.method === "ui/notifications/size-changed") { const h = Number(m.params?.height); if (Number.isFinite(h)) view.style.height = Math.max(180, Math.min(16000, h)) + "px"; return; }
+    if (m.id === undefined) return;
+    try { post({id: m.id, result: await bridge(m)}); }
+    catch { post({id: m.id, error: {code: -32603, message: "The preview could not complete this request."}}); }
+  });
+  $("search").onsubmit = async e => {
+    e.preventDefault();
+    const request = ++generation;
+    $("lookup").disabled = true; message.textContent = "Asking FAC, SAM.gov and the local data…"; source.replaceChildren();
+    try {
+      const result = await api("call", {name: `grantee_show_${kind()}`, arguments: {uei: $("uei").value.trim().toUpperCase()}});
+      if (request === generation) { deliver(result); message.textContent = ""; }
+    } catch (error) { if (request === generation) message.textContent = error.message; }
+    finally { $("lookup").disabled = false; }
+  };
+  async function demo() { const request = ++generation; try { const result = await api(`demo/${kind()}`); if (request === generation) { deliver(result); message.textContent = ""; source.replaceChildren(); } } catch { message.textContent = "The demo could not be loaded."; } }
+  function open() { initialized = false; latest = null; view.src = `${base}view/${kind()}`; demo(); }
+  $("demo").onclick = demo;
+  $("kind").onchange = open;
+  open();
+})();
+</script>
+</body>
+</html>

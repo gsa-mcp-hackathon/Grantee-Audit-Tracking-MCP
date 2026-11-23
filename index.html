@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grantee Audit Tracking MCP Server</title>
+<meta name="description" content="Demo video and overview of the Grantee Audit Tracking MCP Server, built for the GSA MCP Server and SI Agent Government Hackathon.">
+<style>
+  :root { color-scheme: light dark; --text: #1f2328; --muted: #59636e; --line: #d1d9e0; --link: #0969da; --bg: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --text: #f0f6fc; --muted: #9198a1; --line: #3d444d; --link: #4493f8; --bg: #0d1117; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.3rem; margin: 40px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  p.lede { color: var(--muted); margin: 0 0 24px; }
+  a { color: var(--link); }
+  video, img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+  video { background: #000; }
+  img { background: #fff; margin: 12px 0; }
+  ul { padding-left: 1.3em; }
+  li { margin: 4px 0; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Grantee Audit Tracking MCP Server</h1>
+  <p class="lede">HRSA OBF team entry in the GSA MCP Server &amp; SI Agent Government Hackathon.</p>
+
+  <video controls preload="metadata" src="docs/deliverables/demo-video.mp4">
+    Your browser can't play this video here.
+    <a href="docs/deliverables/demo-video.mp4">Download the demo video</a>.
+  </video>
+  <p>Demo video, 17 minutes: the problem, the server, and live investigations.</p>
+
+  <h2>What it is</h2>
+  <p>An MCP server that lets an SI agent investigate a federal grantee's Single Audit history across
+  the Federal Audit Clearinghouse (FAC), SAM.gov, USAspending, and IRS exempt-organization records,
+  all public data. It resolves every identifier a grantee has filed under, finds the audits that
+  could cover a given year, and links each fact to its public source.</p>
+  <p><strong>The agent gathers the evidence; the analyst makes the call.</strong> The tools return
+  sourced findings with their caveats, never a compliance or risk determination.</p>
+
+  <img src="docs/images/server-design.png" alt="Server design: an MCP client calls the FastMCP server, whose 4 composite tools and 16 source tools read live public APIs and a dated local SQLite snapshot">
+
+  <h2>See more</h2>
+  <ul>
+    <li><a href="https://github.com/gsa-mcp-hackathon/Grantee-Audit-Tracking-MCP">Code and README on GitHub</a>: tools, results, evaluation, and security</li>
+    <li><a href="docs/deliverables/slide-deck.pdf">Slide deck</a> (PDF)</li>
+    <li><a href="docs/deliverables/evaluation-document.pdf">Evaluation document</a> (PDF): method, results, security, lessons learned</li>
+  </ul>
+
+  <footer>Prototype built for the hackathon. It runs locally, is not deployed, and is not an official HRSA system.</footer>
+</main>
+</body>
+</html>

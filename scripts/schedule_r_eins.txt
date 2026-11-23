@@ -1,0 +1,21 @@
+# EINs whose Form 990 Schedule R scripts/fetch_schedule_r.py loads: the
+# parents and subsidiaries in docs/scenarios.md and eval/cases.json.
+# One per line; text after # is a comment.
+
+431036785  # S16 Betty Jean Kerr People's Health Centers, the parent
+431844750  # S16 People's Health Supportive Services, its subsidiary
+943480131  # S4 Louisiana Children's Medical Center, the parent
+843390470  # S4 LCMC Health Holdings
+251925187  # S4 University Medical Center Management Corp, covered by LCMC's audit
+251635121  # S9 Bridgeway Capital, whose notes name four subsidiaries
+470646706  # S10 Mercy Housing, Inc. (Denver)
+382376561  # S10 Mercy Housing Corporation (Lansing), on the same UEI
+232552707  # S11 Nueva Esperanza, Inc.
+232853988  # S11 Esperanza Academy Charter School, audited separately
+262366542  # S11 Chesapeake Regional Medical Group; the hospital authority files no 990
+042103865  # eval s12 Bay Path University, audited separately from BPU Acquisition
+222484505  # S17 Covenant Health, a group-exemption subordinate
+010212435  # S17 St. Joseph Hospital (Bangor, ME), a member of Covenant
+463131350  # S19 Baylor Scott & White Health, the parent
+463130985  # S19 Baylor Scott & White Holdings
+203749695  # S19 Scott & White Hospital - Round Rock

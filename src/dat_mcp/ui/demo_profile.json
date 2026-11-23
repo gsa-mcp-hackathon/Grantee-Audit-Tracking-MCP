@@ -1,0 +1,354 @@
+{
+  "demo": true,
+  "identity": {
+    "searched": {
+      "ueis": [
+        "DEMOHEALTH01"
+      ],
+      "eins": []
+    },
+    "identifiers": [
+      {
+        "uei": "DEMOHEALTH01",
+        "ein": "000000001",
+        "names": [
+          "RIVERBEND COMMUNITY HEALTH"
+        ],
+        "links": [
+          "searched UEI DEMOHEALTH01"
+        ],
+        "audit_years": [
+          "2020",
+          "2021"
+        ]
+      },
+      {
+        "uei": "DEMOHEALTH0I",
+        "ein": "000000001",
+        "names": [
+          "RIVERBEND COMMUNITY HEALTH INC"
+        ],
+        "links": [
+          "UEI one character from DEMOHEALTH01, with the same EIN"
+        ],
+        "audit_years": [
+          "2024"
+        ]
+      }
+    ],
+    "unconfirmed_leads": [
+      {
+        "uei": "DEMOCLINIC02",
+        "ein": "000000002",
+        "names": [
+          "RIVERBEND DENTAL CLINIC"
+        ],
+        "links": [
+          "a different name at the same address"
+        ],
+        "audit_years": [
+          "2022"
+        ]
+      }
+    ],
+    "other_organizations": [],
+    "listed_in_parent_audits": [
+      {
+        "listed_by_name": "RIVERBEND HEALTH NETWORK",
+        "listed_by_ein": "000000009",
+        "listed_by_ueis": [
+          "DEMOPARENT01"
+        ],
+        "audit_years": [
+          "2022"
+        ],
+        "listed_by": "UEI",
+        "latest_report_id": "DEMO-PARENT-2022",
+        "source_url": null
+      }
+    ],
+    "sam_registrations": {
+      "registrations": [
+        {
+          "uei": "DEMOHEALTH01",
+          "legal_business_name": "Riverbend Community Health",
+          "dba_name": null,
+          "registration_status": "Active",
+          "registration_expiration_date": "2027-05-01",
+          "entity_structure": "Corporate Entity (Tax Exempt)",
+          "profit_structure": "Non-Profit Organization",
+          "fiscal_year_end": "06/30",
+          "source_url": null,
+          "address": "100 EXAMPLE ST",
+          "city": "RIVERBEND",
+          "state": "MN"
+        }
+      ],
+      "not_found": [
+        "DEMOHEALTH0I"
+      ]
+    },
+    "irs_records": {
+      "records": [
+        {
+          "ein": "000000001",
+          "name": "RIVERBEND COMMUNITY HEALTH",
+          "city": "RIVERBEND",
+          "state": "MN",
+          "exemption": "501(c)(3)",
+          "exemption_status": "unconditional exemption",
+          "fiscal_year_end_month": 6,
+          "latest_return_period": "2025-06",
+          "source_url": null,
+          "name_matches_fac": true
+        }
+      ],
+      "not_found": [],
+      "revocations": [],
+      "listed_by": [
+        {
+          "ein": "000000001",
+          "filer_ein": "000000009",
+          "filer_name": "RIVERBEND HEALTH NETWORK",
+          "relationship": "related tax-exempt organization",
+          "tax_years": [
+            "2022",
+            "2023"
+          ],
+          "source_url": null
+        }
+      ]
+    },
+    "entity": {
+      "fac_entity_type": "non-profit",
+      "sam_entity_structure": "Corporate Entity (Tax Exempt)",
+      "sam_profit_structure": "Non-Profit Organization",
+      "fiscal_year_end": {
+        "used": {
+          "source": "FAC's latest audit",
+          "value": "2024-06-30"
+        },
+        "fac": {
+          "value": "2024-06-30",
+          "report_id": "DEMO-2024"
+        },
+        "sam": {
+          "value": "06/30",
+          "uei": "DEMOHEALTH01",
+          "registration_status": "Active"
+        },
+        "fac_parent": {
+          "value": "2022-06-30"
+        },
+        "irs": [
+          {
+            "ein": "000000001",
+            "month": 6
+          }
+        ],
+        "sources_disagree": false
+      }
+    },
+    "open_questions": [
+      "Is DEMOHEALTH0I a typo for DEMOHEALTH01? SAM.gov has no registration for it."
+    ],
+    "notes": [
+      "1 possible match by name or address is in unconfirmed_leads; it is not treated as this entity."
+    ],
+    "caveats": [
+      "This is a fictional profile. Every name, identifier, report, date and amount is made up.",
+      "identifiers are linked by a shared UEI or EIN, a one-character typo, or the same name at the same address. That is evidence of the same organization, not proof."
+    ]
+  },
+  "coverage": {
+    "searched": {
+      "ueis": [
+        "DEMOHEALTH01"
+      ],
+      "eins": []
+    },
+    "identity": {
+      "identifiers": [
+        {
+          "uei": "DEMOHEALTH01",
+          "ein": "000000001",
+          "names": [
+            "RIVERBEND COMMUNITY HEALTH"
+          ],
+          "links": [
+            "searched UEI DEMOHEALTH01"
+          ]
+        },
+        {
+          "uei": "DEMOHEALTH0I",
+          "ein": "000000001",
+          "names": [
+            "RIVERBEND COMMUNITY HEALTH INC"
+          ],
+          "links": [
+            "UEI one character from DEMOHEALTH01, with the same EIN"
+          ]
+        }
+      ],
+      "sam_registrations": [
+        {
+          "uei": "DEMOHEALTH01",
+          "legal_business_name": "Riverbend Community Health",
+          "registration_status": "Active",
+          "address": "100 EXAMPLE ST",
+          "city": "RIVERBEND",
+          "state": "MN"
+        }
+      ],
+      "ueis_not_in_sam": [
+        "DEMOHEALTH0I"
+      ],
+      "unconfirmed_leads": 1,
+      "other_organizations": 0,
+      "open_identity_questions": 1
+    },
+    "entity": {
+      "fac_entity_type": "non-profit"
+    },
+    "fiscal_year_end": {
+      "used": {
+        "source": "FAC's latest audit",
+        "value": "2024-06-30"
+      },
+      "sources_disagree": false
+    },
+    "years": [
+      {
+        "audit_year": 2025,
+        "route": "no audit found",
+        "prior_year_report_id": "DEMO-2024",
+        "prior_year_audit_year": 2024,
+        "prior_year_fy_end_date": "2024-06-30",
+        "prior_year_total_expended": 4780000,
+        "prior_year_programs": [
+          {
+            "aln": "93.224",
+            "program": "HEALTH CENTER PROGRAM",
+            "amount_expended": 4555000,
+            "sefa_lines": 2,
+            "direct": true
+          },
+          {
+            "aln": "93.527",
+            "program": "GRANTS FOR NEW AND EXPANDED SERVICES UNDER THE HEALTH CENTER PROGRAM",
+            "amount_expended": 225000,
+            "sefa_lines": 1,
+            "direct": true
+          }
+        ],
+        "expected_fy_end_date": "2025-06-30",
+        "expected_due_date": "2026-03-31",
+        "fy_end_source": "FAC's latest audit",
+        "source_url": "https://app.fac.gov/dissemination/search/"
+      },
+      {
+        "audit_year": 2024,
+        "route": "own audit, under another UEI",
+        "fy_end_date": "2024-06-30",
+        "report_id": "DEMO-2024",
+        "fac_accepted_date": "2025-10-23",
+        "due_date": "2025-03-31",
+        "days_late": 206,
+        "total_amount_expended": 4780000,
+        "filed_under": {
+          "uei": "DEMOHEALTH0I",
+          "ein": "000000001"
+        },
+        "filed_as": "RIVERBEND COMMUNITY HEALTH INC",
+        "linked_by": [
+          "UEI one character from DEMOHEALTH01, with the same EIN"
+        ],
+        "source_url": null,
+        "resubmission_version": 1
+      },
+      {
+        "audit_year": 2023,
+        "route": "parent's audit on file, entity not listed",
+        "expected_fy_end_date": "2023-06-30",
+        "expected_due_date": "2024-03-31",
+        "fy_end_source": "FAC's latest audit",
+        "parent_audit": {
+          "report_id": "DEMO-PARENT-2023",
+          "auditee_name": "RIVERBEND HEALTH NETWORK",
+          "filed_under": {
+            "uei": "DEMOPARENT01",
+            "ein": "000000009"
+          },
+          "fy_end_date": "2023-06-30",
+          "fac_accepted_date": "2024-02-20",
+          "last_listed_this_entity": 2022,
+          "source_url": null
+        },
+        "what_this_means": "This audit doesn't list the entity, and a parent can cover an entity without listing it, so the missing listing settles nothing either way.",
+        "source_url": null
+      },
+      {
+        "audit_year": 2022,
+        "route": "listed as covered in another audit, by UEI",
+        "report_id": "DEMO-PARENT-2022",
+        "listed_by": {
+          "name": "RIVERBEND HEALTH NETWORK",
+          "uei": "DEMOPARENT01",
+          "ein": "000000009",
+          "fy_end_date": "2022-06-30"
+        },
+        "listed_identifiers": {
+          "ueis": [
+            "DEMOHEALTH01"
+          ],
+          "eins": []
+        },
+        "source_url": null
+      },
+      {
+        "audit_year": 2021,
+        "route": "own audit",
+        "fy_end_date": "2021-06-30",
+        "report_id": "DEMO-2021",
+        "fac_accepted_date": "2022-03-02",
+        "due_date": "2022-03-31",
+        "days_late": 0,
+        "total_amount_expended": 4350000,
+        "filed_under": {
+          "uei": "DEMOHEALTH01",
+          "ein": "000000001"
+        },
+        "source_url": null,
+        "resubmission_version": 1
+      },
+      {
+        "audit_year": 2020,
+        "route": "own audit",
+        "fy_end_date": "2020-06-30",
+        "report_id": "DEMO-2020",
+        "fac_accepted_date": "2021-02-15",
+        "due_date": "2021-03-31",
+        "days_late": 0,
+        "total_amount_expended": 4100000,
+        "filed_under": {
+          "uei": "DEMOHEALTH01",
+          "ein": "000000001"
+        },
+        "source_url": null,
+        "resubmission_version": 1
+      }
+    ],
+    "open_questions": [
+      "Was a Single Audit required for fiscal year 2025? No own filing and no parent listing was found for it."
+    ],
+    "notes": [
+      "1 of 3 filings was accepted after the nine-month date, by 206 days (audit year 2024).",
+      "RIVERBEND HEALTH NETWORK lists this entity as covered by UEI for 2022. A listing by EIN isn't found by a search by UEI, or the reverse."
+    ],
+    "caveats": [
+      "This is a fictional profile. Every name, identifier, report, date and amount is made up.",
+      "route says how each year's audit was found, or that none was. It is not a finding that a year is covered, late, or missing an audit that was required.",
+      "due_date is nine months after the fiscal year end. Extensions are not applied, and the accepted date is when FAC accepted the filing, not when it was submitted."
+    ]
+  }
+}
